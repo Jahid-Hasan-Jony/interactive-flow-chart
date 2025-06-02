@@ -16,7 +16,6 @@ const FlowchartPage = () => {
       x: 50,
       y: 350,
       hidden: false, // Initially visible
-      // isSelected: false, // Remove this, let the selection logic handle it
       disabled: false, // Ensure it's not disabled
     },
 
@@ -86,7 +85,7 @@ const FlowchartPage = () => {
     },
     {
       id: "p21_8",
-      label: "How do we use technology to improve our lives?",
+      label: "use technology to improve our lives?",
       type: "green",
       level: "pace21",
       x: 250,
@@ -433,7 +432,7 @@ const FlowchartPage = () => {
       setSelectedNode(node.id);
       setSelectedPath(currentPath);
     },
-    [nodes, selectedNode, selectedPath]
+    [nodes, selectedNode, selectedPath, connectionMap] // Added connectionMap to dependencies
   );
 
   // Draw the flowchart with D3
@@ -498,7 +497,8 @@ const FlowchartPage = () => {
       .append("rect")
       .attr("width", 180)
       .attr("height", 60)
-      .attr("rx", 8);
+      .attr("rx", 8)
+      .attr("class", "node-bg"); // ✅ Custom class applied here
 
     // Updated text append with wrapText function
     newNodeGroups
@@ -513,7 +513,7 @@ const FlowchartPage = () => {
 
     // SVG paths for FaArrowLeft and FaArrowRight
     // IMPORTANT: fill="currentColor" ensures the icon inherits color from its parent
-    const faArrowLeftSvg = `<svg viewBox="0 0 448 512" fill="currentColor" width="16px" height="16px"><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32L109.3 224l105.4-105.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>`;
+    const faArrowLeftSvg = `<svg viewBox="0 0 448 512" fill="currentColor" width="16px" height="16px" ><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32L109.3 224l105.4-105.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>`;
     const faArrowRightSvg = `<svg viewBox="0 0 448 512" fill="currentColor" width="16px" height="16px"><path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0-67.4 67.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg>`;
 
     // Update existing nodes and add icons conditionally
@@ -560,7 +560,7 @@ const FlowchartPage = () => {
         group
           .append("foreignObject")
           .attr("class", "arrow-icon right-arrow")
-          .attr("x", 159) // Position for right arrow
+          .attr("x", 160) // Position for right arrow
           .attr("y", 22)
           .attr("width", 16)
           .attr("height", 16)
@@ -593,8 +593,8 @@ const FlowchartPage = () => {
         // Create a curved path
         const midX = (source.x + 180 + target.x) / 2;
         return `M${source.x + 180},${source.y + 30}
-                          Q${midX},${source.y + 30} ${midX},${target.y + 30}
-                          T${target.x},${target.y + 30}`;
+                             Q${midX},${source.y + 30} ${midX},${target.y + 30}
+                             T${target.x},${target.y + 30}`;
       });
 
     edgePaths.exit().transition().duration(300).style("opacity", 0).remove();
@@ -606,10 +606,13 @@ const FlowchartPage = () => {
 
   return (
     <div className="flowchart-container">
-      <h1 style={{ fontFamily: "var(--font-secondary)" }}>
+      <h1
+        className="text-4xl font-semibold font-secondary"
+      
+      >
         Science & Innovation Pathways
       </h1>
-      {/* Removed the 'bg-amber-500' class from the svg */}
+
       <svg ref={svgRef} width="1200" height="900"></svg>
       <ToastContainer position="top-center" />
 
@@ -633,33 +636,29 @@ const FlowchartPage = () => {
           font-size: 24px;
           font-weight: bold;
         }
-        .node rect {
-          stroke: #333; /* বর্ডার রঙ (আপনি আপনার পছন্দ অনুযায়ী পরিবর্তন করতে পারেন) */
+
+        .node-bg {
+          fill: var(--color-background); /* ✅ থিমের রঙ ব্যবহার */
+          stroke: var(--color-border-color);
           stroke-width: 1.5px;
-          fill: #000000; /* সব কার্ডের ফিল কালার */
           rx: 8;
           ry: 8;
         }
-
-        /* সমস্ত নোড টাইপের জন্য ফিল কালার #000000 সেট করা হচ্ছে */
-        .node-entry rect,
-        .node-red rect,
-        .node-blue rect,
-        .node-purple rect,
-        .node-green rect,
-        .node-orange rect {
-          fill: #000000;
-        }
-
         .node text {
-          font-size: 11px;
-          fill: white; /* টেক্সটের রঙ */
-          pointer-events: none;
-          font-weight: bold;
+          font-size: 12px !important; /* ✅ Font size 16px */
+          fill: white;
+
+          font-family: var(--font-secondary); /* ✅ Font family Poppins */
         }
+
         .node tspan {
           white-space: pre;
-          fill: white; /* tspan এর টেক্সটের রঙ */
+          fill: white;
+
+          /* ✅ tspan এর টেক্সটের রঙ */
+          font-family: var(
+            --font-secondary
+          ); /* ✅ tspan এর Font family Poppins */
         }
 
         .node.disabled rect {
@@ -692,16 +691,15 @@ const FlowchartPage = () => {
         }
         .arrow-icon {
           pointer-events: none;
-          /* এখানে ব্যাকগ্রাউন্ড স্বচ্ছ করা হয়েছে */
-          background-color: transparent; 
+          background-color: transparent;
+          color: white; /* ✅ আইকনের রঙ সাদা */
+          font-size: 16px; /* ✅ আইকনের ফন্ট সাইজ 16px */
         }
-        /* Removed .arrow-icon div as the div is removed from the HTML structure */
 
         svg {
           display: block;
           margin-left: auto;
           margin-right: auto;
-          
           border-radius: 8px;
         }
       `}</style>
